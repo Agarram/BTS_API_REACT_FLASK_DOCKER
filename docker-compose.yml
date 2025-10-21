@@ -2,9 +2,32 @@ version: '3.8'
 
 services:
   backend:
+    build: ./backend
+    container_name: flask_app
+    restart: always
+    environment:
+      FLASK_ENV: development
+      DATABASE_URL: postgres://user:userpassword@postgres_flask:5432/flaskdb
+      BACKEND_PORT: http://localhost:5000
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres_flask
+
 
   frontend:
- 
+    build: ./frontend
+    container_name: frontend
+    restart: always
+    environment:
+      API_URL: http://localhost:5000
+      
+      FRONTEND_URL: http://localhost:5173
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
 
   postgres_flask:
     image: postgres:latest
