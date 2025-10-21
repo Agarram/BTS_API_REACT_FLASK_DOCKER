@@ -1,0 +1,59 @@
+name: Security Checks
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  frontend:
+    name: Build and Test Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Build Frontend Docker image
+        run: |
+          docker build -t frontend ./frontend
+
+      - name: Run Frontend container
+        run: |
+          docker run -d --name frontend_test -p 5173:5173 frontend
+          sleep 5  # attendre que le serveur démarre
+
+      - name: Test Frontend with curl
+        run: |
+          curl -f http://localhost:5173 || exit 1
+          
+      - name: Stop Frontend container
+        run: |
+          docker stop frontend_test
+          docker rm frontend_test
+
+  backend:
+    name: Build and Test Backend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Build Backend Docker image
+        run: |
+          docker build -t backend ./backend
+
+      - name: Run Backend container
+        run: |
+          docker run -d --name backend_test -p 5000:5000 backend
+          sleep 5  # attendre que le serveur démarre
+
+      - name: Test Backend with curl
+        run: |
+          curl -f http://localhost:5000 || exit 1
+          
+      - name: Stop Backend container
+        run: |
+          docker stop backend_test
+          docker rm backend_test
